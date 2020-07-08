@@ -5,6 +5,33 @@ Circular dma acces and save size is word. (12bit) ADC=12mHz
 I read pot from PA1 pin and if adc value is greater than 3000, PC13 pin's light became on.
 Else it goes off also you can check adc value by debug. PA1 pin direct acces to memory 
 so it saves values to memory and overwrite on it. 
+
+
+
+
+
+		/* polling method: write it in to while loop
+HAL_ADC_Start(&hadc1);
+HAL_ADC_PollForConversion(&hadc1,100);
+adc_read=HAL_ADC_GetValue(&hadc1);
+HAL_ADC_Stop(&hadc1);
+HAL_Delay(200);		
+		*/
+
+
+/* interrupt method
+
+HAL_ADC_Start_IT(&hadc1); // start it in main
+
+// create it before main also we use this function for dma. DMA example is below.
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+adc_read=HAL_ADC_GetValue(&hadc1);
+};
+
+
+*/
+
   *
   ******************************************************************************
   */
@@ -38,7 +65,7 @@ DMA_HandleTypeDef hdma_adc1;
 
 /* USER CODE BEGIN PV */
 uint32_t adc_read;
-uint32_t buffer;
+uint32_t temp;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -49,7 +76,7 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-adc_read=buffer;
+adc_read=temp;
 if(adc_read > 3000)
 	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13, GPIO_PIN_SET);
 else 
@@ -93,7 +120,7 @@ int main(void)
   MX_DMA_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-HAL_ADC_Start_DMA(&hadc1, &buffer, 1);
+HAL_ADC_Start_DMA(&hadc1, &temp, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
